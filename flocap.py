@@ -13,6 +13,7 @@ import base64
 from unittest.mock import patch
 from transformers.dynamic_module_utils import get_imports
 from transformers.utils import TRANSFORMERS_CACHE
+from typing import Union
 
 parser = argparse.ArgumentParser(
     prog="flocap.py", description="Florence-2 Captioning API"
@@ -62,11 +63,15 @@ if torch.cuda.is_available():
     logger.debug("CUDA device name: %s", torch.cuda.get_device_name(0))
 
 
-def fixed_get_imports(filename: str | os.PathLike) -> list[str]:
+def fixed_get_imports(filename: Union[str, os.PathLike]) -> list:
     if not str(filename).endswith("modeling_florence2.py"):
         return get_imports(filename)
     imports = get_imports(filename)
-    imports.remove("flash_attn")
+    
+    # Überprüfe, ob "flash_attn" in der Liste ist, bevor es entfernt wird
+    if "flash_attn" in imports:
+        imports.remove("flash_attn")
+    
     return imports
 
 app = Flask(__name__)
